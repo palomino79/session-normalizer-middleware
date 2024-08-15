@@ -1,0 +1,18 @@
+[tool.poetry]
+name = "fasthtml-sessionnormalizer"
+version = "0.1.0"
+description = "A normalizer for session middleware in FastHTML"
+license = "Apache 2.0"
+readme = "README.md"
+homepage = "https://github.com/palomino79/session_normalizer_middleware"
+
+[tool.poetry.dependencies]
+python = "^3.6"
+python-fasthtml = "^0.3.6"
+
+[tool.poetry.dev-dependencies]
+pytest = "^7.2.2"
+
+[build-system]
+requires = ["poetry>=1.1"]
+build-backend = "poetry.masonry.api"
