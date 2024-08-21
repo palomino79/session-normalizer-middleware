@@ -28,18 +28,20 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 
-from fasthtml.core import MiddlewareBase
 from fastcore.basics import AttrDict
 from starlette.requests import HTTPConnection
 from starlette.datastructures import MutableHeaders
+from starlette.middleware.sessions import SessionMiddleware
 from itsdangerous import BadSignature
 from base64 import b64decode, b64encode
 import json
-from typing import Optional, Callable, any
 
 
 def _session_normalize(obj: any):
-    if isinstance(obj, list):
+    if isinstance(obj, list) or isinstance(obj, tuple):
+        # we have to specify types here because attempting to accept
+        # any and all objects that implement __iter__ frequently results
+        # in infinite recursion.
         return [_session_normalize(o) for o in obj]
     elif isinstance(obj, dict):
         return {
@@ -49,8 +51,12 @@ def _session_normalize(obj: any):
     elif isinstance(obj, (str, int, float, bool, type(None))):
         return obj
     elif hasattr(obj, "__json__"):
-        return obj.__json__()
-    elif hasattr(obj, "__str__"):
+        if callable(obj.__json__):
+            return obj.__json__()
+        return obj.__json__
+    elif (
+        hasattr(obj, "__str__") and obj.__class__.__str__ is not object.__str__
+    ):
         return str(obj)
     elif hasattr(obj, "__dict__"):
         return obj.__dict__
@@ -59,7 +65,7 @@ def _session_normalize(obj: any):
     )
 
 
-class SessionNormalizerMiddleware(MiddlewareBase):
+class SessionNormalizerMiddleware(SessionMiddleware):
     """
     Provides automatic coercion of stored data inside Starlette Session objects.
     Intended to be used with FastHTML as an optional replacement for its own
@@ -67,17 +73,6 @@ class SessionNormalizerMiddleware(MiddlewareBase):
     Allows users to provide objects like UUIDs or custom dataclasses that might
     be coercible to a data format capable of being easily serialized.
     """
-
-    def __init__(self, app, normalizer: Optional[Callable] = None):
-        """
-        Args:
-        `normalizer`: an optional Callable that serves as a drop-in replacement
-        for the default normalization strategy. Should be designed to act on
-        and return a serializable value for each individual key and value
-        in the session dictionary.
-        """
-        self.app = app
-        self.normalizer = normalizer
 
     async def __call__(self, scope, receive, send) -> None:
         if scope["type"] not in ("http", "websocket"):  # pragma: no cover
@@ -87,7 +82,7 @@ class SessionNormalizerMiddleware(MiddlewareBase):
         connection = HTTPConnection(scope)
         initial_session_was_empty = True
 
-        if self.session_cookie in connection.cookies:
+        if self.session_cookie in connection.cookies:  # pragma nocover
             data = connection.cookies[self.session_cookie].encode("utf-8")
             try:
                 data = self.signer.unsign(data, max_age=self.max_age)
@@ -98,7 +93,7 @@ class SessionNormalizerMiddleware(MiddlewareBase):
         else:
             scope["session"] = {}
 
-        async def receive_wrapper():
+        async def receive_wrapper():  # pragma nocover
             message = await receive()
             if "session" in scope and not isinstance(
                 scope["session"], AttrDict
@@ -112,8 +107,6 @@ class SessionNormalizerMiddleware(MiddlewareBase):
                     for key, val in scope["session"].items():
                         scope["session"][_session_normalize(key)] = (
                             _session_normalize(val)
-                            if not self.normalizer
-                            else self.normalizer(val)
                         )
                     data = b64encode(
                         json.dumps(scope["session"]).encode("utf-8")
@@ -130,7 +123,7 @@ class SessionNormalizerMiddleware(MiddlewareBase):
                         security_flags=self.security_flags,
                     )
                     headers.append("Set-Cookie", header_value)
-                elif not initial_session_was_empty:
+                elif not initial_session_was_empty:  # pragma nocover
                     headers = MutableHeaders(scope=message)
                     header_value = "{session_cookie}={data}; path={path}; {expires}{security_flags}".format(  # noqa E501
                         session_cookie=self.session_cookie,
