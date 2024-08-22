@@ -5,10 +5,11 @@ description = "A normalizer for session middleware in FastHTML"
 license = "Apache 2.0"
 readme = "README.md"
 homepage = "https://github.com/palomino79/session_normalizer_middleware"
+authors = ["Vince McCrae"]
 
 [tool.poetry.dependencies]
 python = "^3.6"
-python-fasthtml = "^0.3.6"
+python-fasthtml = "^0.4.0"
 
 [build-system]
 requires = ["poetry>=1.1"]

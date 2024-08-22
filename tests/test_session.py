@@ -1,7 +1,7 @@
 from uuid import UUID, uuid4
 from starlette.testclient import TestClient
 from fasthtml import FastHTML
-from session_normalizer_middleware.middleware import (
+from fasthtml_sessionnormalizer.middleware import (
     SessionNormalizerMiddleware,
 )
 import unittest
@@ -19,24 +19,18 @@ class SessionNormalizerTests(unittest.TestCase):
         a custom __str__ method and is a likely candidate for something
         that would actually need to be saved in a session cookie.
         """
-        app, cli, route = get_cli(
-            FastHTML(sess_cls=SessionNormalizerMiddleware)
-        )
+        app, cli, route = get_cli(FastHTML(sess_cls=SessionNormalizerMiddleware))
 
         @app.get("/")
         def _(session, item_id: UUID):
             session["item_id"] = item_id
             return "OK"
 
-        response = cli.get(
-            "/?item_id=36621c53-55c3-11ef-b14b-c45ab1ddc9ad"
-        ).text
+        response = cli.get("/?item_id=36621c53-55c3-11ef-b14b-c45ab1ddc9ad").text
         self.assertEqual(response, "OK")
 
     def test_list_normalize_success(self):
-        app, cli, route = get_cli(
-            FastHTML(sess_cls=SessionNormalizerMiddleware)
-        )
+        app, cli, route = get_cli(FastHTML(sess_cls=SessionNormalizerMiddleware))
 
         @app.get("/")
         def _(session):
@@ -47,9 +41,7 @@ class SessionNormalizerTests(unittest.TestCase):
         self.assertEqual(response, "OK")
 
     def test_dict_normalize_success(self):
-        app, cli, route = get_cli(
-            FastHTML(sess_cls=SessionNormalizerMiddleware)
-        )
+        app, cli, route = get_cli(FastHTML(sess_cls=SessionNormalizerMiddleware))
 
         @app.get("/")
         def _(session):
@@ -60,9 +52,7 @@ class SessionNormalizerTests(unittest.TestCase):
         self.assertEqual(response, "OK")
 
     def test_dunder_json_normalize_success(self):
-        app, cli, route = get_cli(
-            FastHTML(sess_cls=SessionNormalizerMiddleware)
-        )
+        app, cli, route = get_cli(FastHTML(sess_cls=SessionNormalizerMiddleware))
 
         class HasDunderJSONMethod:
             def __json__(self):
@@ -81,9 +71,7 @@ class SessionNormalizerTests(unittest.TestCase):
         self.assertEqual(response, "OK")
 
     def test_dunder_dict_normalize_success(self):
-        app, cli, route = get_cli(
-            FastHTML(sess_cls=SessionNormalizerMiddleware)
-        )
+        app, cli, route = get_cli(FastHTML(sess_cls=SessionNormalizerMiddleware))
 
         class HasDunderDict:
             pass
@@ -102,9 +90,7 @@ class SessionNormalizerTests(unittest.TestCase):
         __slots__, which means it has no __dict__ attribute, and it
         also implements no custom __str__ method.
         """
-        app, cli, route = get_cli(
-            FastHTML(sess_cls=SessionNormalizerMiddleware)
-        )
+        app, cli, route = get_cli(FastHTML(sess_cls=SessionNormalizerMiddleware))
 
         class HasNoSterializationLogic:
             __slots__ = ["hello", "world"]
