@@ -1,7 +1,7 @@
 ## Requirements
 
 - Python 3.6+
-- FastHTML 0.3.6+
+- FastHTML 0.4.0+
 
 ## Issues and Contributions
 
