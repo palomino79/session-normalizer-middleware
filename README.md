@@ -15,7 +15,7 @@ pip install fasthtml-sessionnormalizer
 
 ## Usage
 
-SessionNormalizerMiddleware provides a drop-in replacement for the standard fasthtml session middleware class. This session middleware class aggressively converts session stored data to a format that can be serialized.
+SessionNormalizerMiddleware provides a drop-in replacement for the standard [FastHTML](https://github.com/AnswerDotAI/fasthtml) session middleware class. This session middleware class aggressively converts session stored data to a format that can be serialized.
 
 Simple example:
 
