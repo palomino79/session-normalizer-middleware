@@ -7,6 +7,12 @@
 
 If you encounter any issues or have suggestions for improvements, please use the [GitHub Issues](https://github.com/palomino79/session-normalizer-middleware/issues) page to report them.
 
+## Installation
+Install via pip:
+```
+pip install fasthtml-sessionnormalizer
+```
+
 ## Usage
 
 SessionNormalizerMiddleware provides a drop-in replacement for the standard fasthtml session middleware class. This session middleware class aggressively converts session stored data to a format that can be serialized.
